@@ -1,9 +1,11 @@
 # Advent Of Code 2023
+
 Advent of Code 2023 written in Python.
 
 ## Requirements
 
-* Python 3.12.0 or above
+Python ^3.12.0
+`pip install -r requirements.txt`
 
 ## Solve
 
