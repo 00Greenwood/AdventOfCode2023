@@ -19,7 +19,7 @@ For the `get_input` function, your Advent of Code session token needs to be stor
 To solve day X, run:
 
 ```
-cd days
+cd src
 py DayX.py
 ```
 

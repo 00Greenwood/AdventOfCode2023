@@ -13,10 +13,10 @@ def main() -> None:
 
 def createFile(day: int) -> None:
     template: str
-    with open(f"days/Day0.py", "r") as f:
+    with open(f"src/Day0.py", "r") as f:
         template = f.read()
     template = template.replace("Day0", f"Day{day}")
-    with open(f"days/Day{day}.py", "x") as f:
+    with open(f"src/Day{day}.py", "x") as f:
         f.write(template)
     return
 
