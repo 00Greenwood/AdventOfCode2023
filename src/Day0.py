@@ -1,5 +1,5 @@
-from utilities.parse import *
-from utilities.get_input import *
+from parse import *
+from get_input import *
 
 
 class Day0:
