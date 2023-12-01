@@ -1,5 +1,6 @@
 from utilities.get_input import *
 from utilities.parse import *
+import time
 
 
 class Day2:
@@ -8,17 +9,15 @@ class Day2:
         self.parsed_input = parse_int(self.input)
         return
 
-    def solve_part_1(self) -> str:
-        return str(self.parsed_input)
-
-    def solve_part_2(self) -> str:
-        return str(self.parsed_input)
+    def solve(self, part_2: bool) -> None:
+        start_time = time.time()
+        print(f'Part {'2' if part_2 else '1'}: {self.parsed_input} - {time.time() - start_time}')
 
 
 def main() -> None:
     day = Day2()
-    print(day.solve_part_1())
-    print(day.solve_part_2())
+    day.solve(False)
+    day.solve(True)
     return
 
 
