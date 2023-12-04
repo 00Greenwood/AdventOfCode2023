@@ -7,11 +7,11 @@ class Day3:
     def __init__(self) -> None:
         self.input = get_input(2023, 3)
         self.parsed_input = parse_lines(self.input)
-        self.numbers = self.get_numbers()
-        self.gears = self.get_gears()
+        self.numbers = self.parse_numbers()
+        self.gears = self.parse_gears()
         return
     
-    def get_numbers(self) -> list[tuple[int, int, int, int]]:
+    def parse_numbers(self) -> list[tuple[int, int, int, int]]:
         numbers: list[tuple[int, int, int, int]] = []
         for y, line in enumerate(self.parsed_input):
             number: str = ""
@@ -26,7 +26,7 @@ class Day3:
                     number = ""
         return numbers
     
-    def get_gears(self) -> list[tuple[int, int]]:
+    def parse_gears(self) -> list[tuple[int, int]]:
         gears: list[tuple[int, int]] = []
         for y, line in enumerate(self.parsed_input):
             for x, char in enumerate(line):
