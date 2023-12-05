@@ -4,3 +4,7 @@ def parse_int(input: str) -> int:
 
 def parse_lines(input: str) -> list[str]:
     return input.splitlines()
+
+
+def parse_string(input: str) -> str:
+    return str(input)
