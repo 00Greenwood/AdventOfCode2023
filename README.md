@@ -12,7 +12,7 @@ To install requirements run:
 pip install -r requirements.txt
 ```
 
-For the `get_input` function, your Advent of Code session token needs to be stored in your environment variable as `SESSION`.
+For the `get_input` function, your Advent of Code session token needs to be stored in your environment variable as `AOC_SESSION`.
 
 ## Solves
 
