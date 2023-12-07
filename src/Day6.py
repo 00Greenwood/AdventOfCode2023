@@ -1,7 +1,6 @@
 from utilities.get_input import *
 from utilities.parse import *
-import time, re
-
+import time, re, math
 
 class Day6:
     def __init__(self) -> None:
@@ -17,6 +16,12 @@ class Day6:
         for i in range(len(times)):
             races.append((int(times[i]), int(distance[i])))
         return races
+    
+    def solve_equation(self, a: int, b: int, c: int) -> tuple[float, float]:
+        discriminant = (b ** 2 - 4 * a * c) ** (1 / 2)
+        x_1 = (-b + discriminant) / (2 * a)
+        x_2 = (-b - discriminant) / (2 * a)
+        return (x_1, x_2)
 
     def solve(self, part_2: bool) -> None:
         start_time = time.time()
@@ -35,20 +40,8 @@ class Day6:
             for races in self.races:
                 race_time = int(str(race_time) + str(races[0]))
                 distance = int(str(distance) + str(races[1]))
-            sum: int = 0
-            for speed in range(1, race_time):
-                distance_traveled = speed * (race_time - speed)
-                if distance_traveled > distance:
-                    break
-                else:
-                    sum += 1
-            for speed in range(race_time, 1, -1):
-                distance_traveled = speed * (race_time - speed)
-                if distance_traveled > distance:
-                    break
-                else:
-                    sum += 1
-            mul = race_time - sum
+            x_1, x_2 = self.solve_equation(-1, race_time, -distance)
+            mul = math.floor(x_2) - math.ceil(x_1) + 1
         print(f'Part {'2' if part_2 else '1'}: {mul} - {time.time() - start_time}')
 
 

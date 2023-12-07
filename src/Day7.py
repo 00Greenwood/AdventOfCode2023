@@ -2,13 +2,6 @@ from utilities.get_input import *
 from utilities.parse import *
 import time
 
-test_input = """32T3K 765
-T55J5 684
-KK677 28
-KTJJT 220
-QQQJA 483"""
-
-
 class Day7:
     def __init__(self) -> None:
         self.input = get_input(2023, 7)
