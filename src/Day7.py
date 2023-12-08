@@ -6,75 +6,73 @@ class Day7:
     def __init__(self) -> None:
         self.input = get_input(2023, 7)
         self.parsed_input = parse_lines(self.input)
-        self.card_rank: dict[str, int] = {'A': 14, 'K': 13, 'Q': 12, 'J': 11,
-                                          'T': 10, '9': 9, '8': 8, '7': 7, '6': 6, '5': 5, '4': 4, '3': 3, '2': 2}
+        self.card_rank: dict[str, int] = {'A': 'A', 'K': 'B', 'Q': 'C', 'J': 'D',
+                                          'T': 'E', '9': 'F', '8': 'G', '7': 'H', '6': 'I', '5': 'J', '4': 'K', '3': 'L', '2': 'M'}
         return
 
-    def parse_hands(self, part_2: bool) -> list[tuple[tuple[int, int, int, int, int], int]]:
+    def parse_hands(self, part_2: bool) -> list[str, int]:
         hands = []
         if part_2:
-            self.card_rank['J'] = 1
+            self.card_rank['J'] = 'N'
         for line in self.parsed_input:
             hand, bid = line.split(' ')
-            first, second, third, fourth, fifth = [
-                self.card_rank[card] for card in hand]
-            hands.append(((first, second, third, fourth, fifth), int(bid)))
+            new_hand = "".join([self.card_rank[card] for card in hand])
+            hands.append((new_hand, int(bid)))
         return hands
 
-    def value_hand(self, hand: tuple[tuple[int, int, int, int, int], int]) -> int:
-        value = 0
+    def value_hand(self, hand: tuple[str, int]) -> str:
         cards, bid = hand
-        for i, card in enumerate(cards):
-            value += card * (100 ** (4 - i))
         number_of_unique_cards = len(set(cards))
         number_of_most_common_card = max([cards.count(card) for card in cards])
+        rank_of_hand = number_of_most_common_card - number_of_unique_cards
         # Jokers are worth 1 in part 2 and can be anything
-        number_of_jokers = cards.count(1)
+        number_of_jokers = cards.count('N')
         # Five of a kind
-        if (number_of_unique_cards == 1):
-            value *= (100 ** 6)
-        # Four of a kind with a joker is actually five of a kind
-        elif (number_of_unique_cards == 2 and number_of_most_common_card == 4 and number_of_jokers > 0):
-            value *= (100 ** 6)
+        if (rank_of_hand == 4):
+            cards = '1' + cards
         # Four of a kind
-        elif (number_of_unique_cards == 2 and number_of_most_common_card == 4):
-            value *= (100 ** 5)
-        # Full house with jokers is actually five of a kind
-        elif (number_of_unique_cards == 2 and number_of_most_common_card == 3 and number_of_jokers > 0):
-            value *= (100 ** 6)
+        elif (rank_of_hand == 2):
+            if (number_of_jokers > 0):
+                cards = '1' + cards
+            else:
+                cards = '2' + cards
         # Full house
-        elif (number_of_unique_cards == 2 and number_of_most_common_card == 3):
-            value *= (100 ** 4)
-        # Three of a kind with a joker is actually four of a kind
-        elif (number_of_unique_cards == 3 and number_of_most_common_card == 3 and number_of_jokers > 0):
-            value *= (100 ** 5)
+        elif (rank_of_hand == 1):
+            if (number_of_jokers > 0):
+                cards = '1' + cards
+            else:
+                cards = '3' + cards
         # Three of a kind
-        elif (number_of_unique_cards == 3 and number_of_most_common_card == 3):
-            value *= (100 ** 3)
-        # Two pair with jokers is actually four of a kind
-        elif (number_of_unique_cards == 3 and number_of_most_common_card == 2 and number_of_jokers > 1):
-            value *= (100 ** 5)
-        # Two pair with a joker is actually a full house
-        elif (number_of_unique_cards == 3 and number_of_most_common_card == 2 and number_of_jokers > 0):
-            value *= (100 ** 4)
+        elif (rank_of_hand == 0):
+            if (number_of_jokers > 0):
+                cards = '2' + cards
+            else:
+                cards = '4' + cards
         # Two pair
-        elif (number_of_unique_cards == 3 and number_of_most_common_card == 2):
-            value *= (100 ** 2)
-        # One pair with a joker is actually three of a kind
-        elif (number_of_unique_cards == 4 and number_of_jokers > 0):
-            value *= (100 ** 3)
+        elif (rank_of_hand == -1):
+            if(number_of_jokers > 1):
+                cards = '2' + cards
+            elif (number_of_jokers > 0):
+                cards = '3' + cards
+            else:
+                cards = '5' + cards
         # One pair
-        elif (number_of_unique_cards == 4):
-            value *= 100
-        # High value with a joker is actually one pair
-        elif (number_of_unique_cards == 5 and number_of_jokers > 0):
-            value *= 100
-        return value
+        elif (rank_of_hand == -2):
+            if (number_of_jokers > 0):
+                cards = '4' + cards
+            else:
+                cards = '6' + cards
+        # High value
+        elif (number_of_jokers > 0):
+            cards = '6' + cards
+        else:
+            cards = '7' + cards
+        return cards
 
     def solve(self, part_2: bool) -> None:
         start_time = time.time()
         hands = self.parse_hands(part_2)
-        hands.sort(key=self.value_hand)
+        hands.sort(key=self.value_hand, reverse=True)
         winnings = 0
         for i, hand in enumerate(hands):
             cards, bid = hand
