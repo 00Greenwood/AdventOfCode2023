@@ -19,7 +19,7 @@ class Day9:
         differences: list[int] = []
         for i in range(0, len(sequence) - 1):
             differences.append(sequence[i+1] - sequence[i])    
-        if max(differences) == 0 and min(differences) == 0:
+        if differences.count(0) == len(differences):
             return sequence[-1]
         return sequence[-1] + self.get_next_number(differences)
     
@@ -27,7 +27,7 @@ class Day9:
         differences: list[int] = []
         for i in range(0, len(sequence) - 1):
             differences.append(sequence[i+1] - sequence[i])    
-        if max(differences) == 0 and min(differences) == 0:
+        if differences.count(0) == len(differences):
             return sequence[0]
         return sequence[0] - self.get_previous_number(differences)
 
