@@ -28,3 +28,11 @@ class Grid:
             if v == char:
                 x, y = k.split(", ")
                 return (int(x), int(y))
+
+    def find_all(self, char: str) -> list[tuple[int, int]]:
+        output: list[tuple[int, int]] = []
+        for k, v in self.grid.items():
+            if v == char:
+                x, y = k.split(", ")
+                output.append((int(x), int(y)))
+        return output
