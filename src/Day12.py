@@ -2,19 +2,16 @@ from utilities.get_input import *
 from utilities.parse import *
 import time, re
 from queue import Queue
-
-test_input = """???.### 1,1,3
-.??..??...?##. 1,1,3
-?#?#?#?#?#?#?#? 1,3,1,6
-????.#...#... 4,1,1
-????.######..#####. 1,6,5
-?###???????? 3,2,1"""
+from threading import Thread, Lock
 
 class Day12:
     def __init__(self) -> None:
         self.input = get_input(2023, 12)
         self.parsed_input = parse_lines(self.input)
         self.springs_and_groups = self.parse_springs_and_groups()
+        # Used for multithreading
+        self.mutex = Lock()
+        self.total_arrangements = 0
         return
     
     def parse_springs_and_groups(self) -> list[tuple[str, list[int]]]:
@@ -25,7 +22,7 @@ class Day12:
             springs_and_groups.append((springs, groups))
         return springs_and_groups
     
-    def is_possibly_valid(self, arrangement: str, total_broken: int) -> bool:
+    def is_possibly_valid(self, arrangement: str, total_broken: int, groups: list[int]) -> bool:
         if arrangement.count('#') > total_broken:
             return False
         # Not enough "?" to convert to broken springs
@@ -34,6 +31,11 @@ class Day12:
         # No more "?"
         if arrangement.count('?') == 0:
             return False
+        arrangement_upto_mystery = re.split(r'(#+\?)|\?', arrangement)[0]
+        groups_of_broken_springs = [len(entry) for entry in re.findall(r'#+', arrangement_upto_mystery)]
+        for i, group in enumerate(groups_of_broken_springs):
+            if group != groups[i]:
+                return False
         return True
     
     def is_valid(self, arrangement: str, groups: list[int]) -> bool:
@@ -43,33 +45,46 @@ class Day12:
             if groups_of_broken_springs == groups:
                 return True
         return False
-
-    def solve(self, part_2: bool) -> None:
+    
+    def check_arrangements(self, springs: str, groups: list[int]) -> None:
         start_time = time.time()
-        total_arrangements = 0
-        for springs, groups in self.springs_and_groups:
-            valid_arrangements = 0
-            total_broken = sum(groups)
-            arrangements_to_check: Queue[str] = Queue()
-            arrangements_to_check.put(springs)
-            while arrangements_to_check.qsize() > 0:
+        arrangements_to_check: Queue[str] = Queue()
+        arrangements_to_check.put(springs)
+        total_broken = sum(groups)
+        while arrangements_to_check.qsize() > 0:
                 arrangement = arrangements_to_check.get()
                 # Convert to working spring
                 arrangement_working = arrangement.replace('?', '.', 1)
                 if self.is_valid(arrangement_working, groups):
-                    valid_arrangements += 1
+                    with self.mutex:
+                        self.total_arrangements += 1
                     continue
                 # Convert to broken spring
                 arrangement_broken = arrangement.replace('?', '#', 1)
                 if self.is_valid(arrangement_broken, groups):
-                    valid_arrangements += 1
+                    with self.mutex:
+                        self.total_arrangements += 1
                     continue
-                if self.is_possibly_valid(arrangement_working, total_broken):
+                if self.is_possibly_valid(arrangement_working, total_broken, groups):
                     arrangements_to_check.put(arrangement_working)
-                if self.is_possibly_valid(arrangement_broken, total_broken):
+                if self.is_possibly_valid(arrangement_broken, total_broken, groups):
                     arrangements_to_check.put(arrangement_broken)
-            total_arrangements += valid_arrangements
-        print(f'Part {'2' if part_2 else '1'}: {total_arrangements} - {time.time() - start_time}')
+        print(f'Thread {springs}: {time.time() - start_time}')
+
+    def solve(self, part_2: bool) -> None:
+        start_time = time.time()
+        self.total_arrangements = 0
+        threads: list[Thread] = []
+        for springs, groups in self.springs_and_groups:
+            if part_2:
+                springs = springs + '?' + springs + '?' + springs + '?' + springs + '?' + springs
+                groups *= 5
+            threads.append(Thread(target=self.check_arrangements, args=(springs, groups)))
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join()
+        print(f'Part {'2' if part_2 else '1'}: {self.total_arrangements} - {time.time() - start_time}')
 
 
 def main() -> None:
