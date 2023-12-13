@@ -4,17 +4,23 @@ class Grid:
         for y, line in enumerate(input.splitlines()):
             for x, char in enumerate(line):
                 self.grid[f"{x}, {y}"] = char
+        self.max_x = max(self.keys(), key=lambda x: x[0])[0]
+        self.max_y = max(self.keys(), key=lambda x: x[1])[1]
 
     def get(self, x: int, y: int) -> str:
         return self.grid.get(f"{x}, {y}")
+
+    def get_row(self, y: int) -> list[str]:
+        return [self.grid.get(f"{x}, {y}") for x in range(self.size()[0])]
+
+    def get_column(self, x: int) -> list[str]:
+        return [self.grid.get(f"{x}, {y}") for y in range(self.size()[1])]
 
     def set(self, x: int, y: int, char: str) -> None:
         self.grid[f"{x}, {y}"] = char
 
     def max(self) -> tuple[int, int]:
-        x = max(self.keys(), key=lambda x: x[0])[0]
-        y = max(self.keys(), key=lambda x: x[1])[1]
-        return (x, y)
+        return (self.max_x, self.max_y)
 
     def size(self) -> tuple[int, int]:
         x, y = self.max()

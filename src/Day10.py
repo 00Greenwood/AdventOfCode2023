@@ -76,7 +76,7 @@ class Day10:
         distance = int(len(loop) / 2)
         if part_2:
             count = 0
-            max_x, max_y = self.grid.size()
+            max_x, max_y = self.grid.max()
             for y in range(0, max_y):
                 number_of_intersections = 0
                 for x in range(0, max_x):
