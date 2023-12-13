@@ -11,10 +11,14 @@ class Grid:
     def set(self, x: int, y: int, char: str) -> None:
         self.grid[f"{x}, {y}"] = char
 
-    def size(self) -> tuple[int, int]:
+    def max(self) -> tuple[int, int]:
         x = max(self.keys(), key=lambda x: x[0])[0]
         y = max(self.keys(), key=lambda x: x[1])[1]
         return (x, y)
+
+    def size(self) -> tuple[int, int]:
+        x, y = self.max()
+        return (x + 1, y + 1)
 
     def keys(self) -> list[tuple[int, int]]:
         keys: list[tuple[int, int]] = []
