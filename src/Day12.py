@@ -1,90 +1,71 @@
 from utilities.get_input import *
 from utilities.parse import *
 import time, re
-from queue import Queue
-from threading import Thread, Lock
+from functools import cache
 
 class Day12:
     def __init__(self) -> None:
         self.input = get_input(2023, 12)
         self.parsed_input = parse_lines(self.input)
-        self.springs_and_groups = self.parse_springs_and_groups()
-        # Used for multithreading
-        self.mutex = Lock()
-        self.total_arrangements = 0
+        self.springs_and_groupings = self.parse_springs_and_groupings()
         return
     
-    def parse_springs_and_groups(self) -> list[tuple[str, list[int]]]:
-        springs_and_groups = []
+    def parse_springs_and_groupings(self) -> list:
+        springs_and_groupings = []
         for line in self.parsed_input:
-            springs, groups_input = line.split(' ')
-            groups = [int(group) for group in groups_input.split(',')]
-            springs_and_groups.append((springs, groups))
-        return springs_and_groups
-    
-    def is_possibly_valid(self, arrangement: str, total_broken: int, groups: list[int]) -> bool:
-        if arrangement.count('#') > total_broken:
-            return False
-        # Not enough "?" to convert to broken springs
-        if arrangement.count('?') + arrangement.count('#') < total_broken:
-            return False
-        # No more "?"
-        if arrangement.count('?') == 0:
-            return False
-        arrangement_upto_mystery = re.split(r'(#+\?)|\?', arrangement)[0]
-        groups_of_broken_springs = [len(entry) for entry in re.findall(r'#+', arrangement_upto_mystery)]
-        for i, group in enumerate(groups_of_broken_springs):
-            if group != groups[i]:
-                return False
-        return True
-    
-    def is_valid(self, arrangement: str, groups: list[int]) -> bool:
-        # No more "?" at all - check the arrangement is valid
-        if arrangement.count('?') == 0:
-            groups_of_broken_springs = [len(entry) for entry in re.findall(r"#+", arrangement)]
-            if groups_of_broken_springs == groups:
-                return True
-        return False
-    
-    def check_arrangements(self, springs: str, groups: list[int]) -> None:
-        start_time = time.time()
-        arrangements_to_check: Queue[str] = Queue()
-        arrangements_to_check.put(springs)
-        total_broken = sum(groups)
-        while arrangements_to_check.qsize() > 0:
-                arrangement = arrangements_to_check.get()
-                # Convert to working spring
-                arrangement_working = arrangement.replace('?', '.', 1)
-                if self.is_valid(arrangement_working, groups):
-                    with self.mutex:
-                        self.total_arrangements += 1
-                    continue
-                # Convert to broken spring
-                arrangement_broken = arrangement.replace('?', '#', 1)
-                if self.is_valid(arrangement_broken, groups):
-                    with self.mutex:
-                        self.total_arrangements += 1
-                    continue
-                if self.is_possibly_valid(arrangement_working, total_broken, groups):
-                    arrangements_to_check.put(arrangement_working)
-                if self.is_possibly_valid(arrangement_broken, total_broken, groups):
-                    arrangements_to_check.put(arrangement_broken)
-        print(f'Thread {springs}: {time.time() - start_time}')
+            springs, groupings_input = line.split(' ')
+            groupings = tuple([int(group) for group in groupings_input.split(',')])
+            springs_and_groupings.append((springs, groupings))
+        return springs_and_groupings
+
+    working_springs_matcher = re.compile(r'\.+')
+
+    @cache
+    def get_broken_springs_matcher(i: int) -> re.Pattern:
+        # Finds the next `i` broken and possible broken springs followed by a working spring or a possible working spring
+        return re.compile(r"[\#\?]{%i}(\.|\?|$)" % i)
+
+    @cache
+    def count_arrangements(springs: str, groupings: tuple) -> int:
+        if len(springs) == 0:
+            if len(groupings) > 0:
+                return 0 # Arrangement not found
+            return 1 # Arrangement found
+        
+        if len(groupings) == 0:
+            if '#' in springs:
+                return 0 # There are leftover broken springs not in a group
+            return 1 # All groupings assigned
+        
+        # Remove all working springs from the start and continue
+        working_springs = Day12.working_springs_matcher.match(springs)
+        if working_springs:
+            number_of_working_springs = len(working_springs.group())
+            return Day12.count_arrangements(springs[number_of_working_springs:], groupings)
+        
+        arrangements = 0
+
+        # Check the case where the '?' is actually a working spring, i.e. remove it and continue
+        if springs[0] == '?':
+            arrangements += Day12.count_arrangements(springs[1:], groupings)
+
+        # Check the case where the '?' is actually a broken spring, i.e. remove the next number of broken springs and continue
+        broken_springs = Day12.get_broken_springs_matcher(groupings[0]).match(springs)
+        if broken_springs:
+            number_of_broken_springs = len(broken_springs.group())
+            arrangements += Day12.count_arrangements(springs[number_of_broken_springs:], groupings[1:])
+
+        return arrangements
 
     def solve(self, part_2: bool) -> None:
         start_time = time.time()
-        self.total_arrangements = 0
-        threads: list[Thread] = []
-        for springs, groups in self.springs_and_groups:
+        total_arrangements = 0
+        for springs, groupings in self.springs_and_groupings:
             if part_2:
                 springs = springs + '?' + springs + '?' + springs + '?' + springs + '?' + springs
-                groups *= 5
-            threads.append(Thread(target=self.check_arrangements, args=(springs, groups)))
-        for thread in threads:
-            thread.start()
-        for thread in threads:
-            thread.join()
-        print(f'Part {'2' if part_2 else '1'}: {self.total_arrangements} - {time.time() - start_time}')
+                groupings *= 5
+            total_arrangements += Day12.count_arrangements(springs, groupings)
+        print(f'Part {'2' if part_2 else '1'}: {total_arrangements} - {time.time() - start_time}')
 
 
 def main() -> None:
