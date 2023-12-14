@@ -46,3 +46,9 @@ class Grid:
                 x, y = k.split(", ")
                 output.append((int(x), int(y)))
         return output
+
+    def print(self) -> None:
+        for y in range(self.size()[1]):
+            print("".join(self.get_row(y)))
+        print()
+        return
