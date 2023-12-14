@@ -1,11 +1,12 @@
 class Grid:
-    def __init__(self, input: str) -> None:
+    def __init__(self, input: str = None) -> None:
         self.grid: dict[str, str] = {}
-        for y, line in enumerate(input.splitlines()):
-            for x, char in enumerate(line):
-                self.grid[f"{x}, {y}"] = char
-        self.max_x = max(self.keys(), key=lambda x: x[0])[0]
-        self.max_y = max(self.keys(), key=lambda x: x[1])[1]
+        if input:
+            for y, line in enumerate(input.splitlines()):
+                for x, char in enumerate(line):
+                    self.grid[f"{x}, {y}"] = char
+            self.max_x = max(self.keys(), key=lambda x: x[0])[0]
+            self.max_y = max(self.keys(), key=lambda x: x[1])[1]
 
     def get(self, x: int, y: int) -> str:
         return self.grid.get(f"{x}, {y}")
