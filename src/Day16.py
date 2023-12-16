@@ -33,30 +33,32 @@ class Day16:
         self.max_x, self.max_y = self.grid.max()
         return
     
-    def move_and_check_path(self, position: Position, direction: Direction, positions_to_check: Queue[PositionWithDirection], path: list[PositionWithDirection]) -> None:
+    def move_and_check_path(self, position: Position, direction: Direction, positions_to_check: Queue[PositionWithDirection], path: set[PositionWithDirection]) -> None:
         position = (position[0] + direction.value[0], position[1] + direction.value[1])
         position_with_direction = (position, direction)
         if position[0] < 0 or position[0] > self.max_x or position[1] < 0 or position[1] > self.max_y:
             return
-        if position_with_direction not in path:
+        before_size = len(path)
+        path.add(position_with_direction)
+        if len(path) > before_size: # Length increased, so it's a new position
             positions_to_check.put(position_with_direction)
-            path.append(position_with_direction)
+            
 
-    def move_through_vertical_splitter(self, position: Position, direction: Direction, positions_to_check: Queue[PositionWithDirection], path: list[PositionWithDirection]) -> None:
+    def move_through_vertical_splitter(self, position: Position, direction: Direction, positions_to_check: Queue[PositionWithDirection], path: set[PositionWithDirection]) -> None:
         if direction == Direction.UP or direction == Direction.DOWN: # Treat as empty
             self.move_and_check_path(position, direction, positions_to_check, path)
         else:  # Split!
             self.move_and_check_path(position, Direction.UP, positions_to_check, path)
             self.move_and_check_path(position, Direction.DOWN, positions_to_check, path)
 
-    def move_through_horizontal_splitter(self, position: Position, direction: Direction, positions_to_check: Queue[PositionWithDirection], path: list[PositionWithDirection]) -> None:
+    def move_through_horizontal_splitter(self, position: Position, direction: Direction, positions_to_check: Queue[PositionWithDirection], path: set[PositionWithDirection]) -> None:
         if direction == Direction.LEFT or direction == Direction.RIGHT: # Treat as empty
             self.move_and_check_path(position, direction, positions_to_check, path)
         else:  # Split!
             self.move_and_check_path(position, Direction.LEFT, positions_to_check, path)
             self.move_and_check_path(position, Direction.RIGHT, positions_to_check, path)
 
-    def move_through_back_mirror(self, position: Position, direction: Direction, positions_to_check: Queue[PositionWithDirection], path: list[PositionWithDirection]) -> None:
+    def move_through_back_mirror(self, position: Position, direction: Direction, positions_to_check: Queue[PositionWithDirection], path: set[PositionWithDirection]) -> None:
         if direction == Direction.LEFT:
             self.move_and_check_path(position, Direction.UP, positions_to_check, path)
         elif direction == Direction.RIGHT:
@@ -66,7 +68,7 @@ class Day16:
         elif direction == Direction.DOWN:
             self.move_and_check_path(position, Direction.RIGHT, positions_to_check, path)  
 
-    def move_through_forward_mirror(self, position: Position, direction: Direction, positions_to_check: Queue[PositionWithDirection], path: list[PositionWithDirection]) -> None:
+    def move_through_forward_mirror(self, position: Position, direction: Direction, positions_to_check: Queue[PositionWithDirection], path: set[PositionWithDirection]) -> None:
         if direction == Direction.LEFT:
             self.move_and_check_path(position, Direction.DOWN, positions_to_check, path)
         elif direction == Direction.RIGHT:
@@ -77,7 +79,7 @@ class Day16:
             self.move_and_check_path(position, Direction.LEFT, positions_to_check, path) 
             
     def calculate_energized(self, start_position: Position, start_direction: Direction) -> int:
-        path: list[PositionWithDirection] = list()
+        path: set[PositionWithDirection] = set()
         energized: set[Position] = set()
         positions_to_check: Queue[PositionWithDirection] = Queue()
         self.move_and_check_path(start_position, start_direction, positions_to_check, path)
