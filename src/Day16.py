@@ -4,7 +4,6 @@ import time
 from utilities.Grid import Grid
 from enum import Enum
 from queue import Queue
-from alive_progress import alive_bar
 
 test_input = """.|...\\....
 |.-.\\.....
@@ -109,18 +108,12 @@ class Day16:
             energized_number = self.calculate_energized((-1,0), Direction.RIGHT)
         else:
             energized_numbers: list[int] = []
-            number_of_entries = 2 * self.max_x + 2 * self.max_y
-            with alive_bar(number_of_entries) as bar:
-                for y in range(self.max_y + 1): 
-                    energized_numbers.append(self.calculate_energized((-1, y), Direction.RIGHT))
-                    bar()
-                    energized_numbers.append(self.calculate_energized((self.max_x + 1, y), Direction.LEFT))
-                    bar()
-                for x in range(self.max_x + 1):
-                    energized_numbers.append(self.calculate_energized((x, -1), Direction.DOWN))
-                    bar()
-                    energized_numbers.append(self.calculate_energized((x, self.max_y + 1), Direction.UP))
-                    bar()
+            for y in range(self.max_y + 1): 
+                energized_numbers.append(self.calculate_energized((-1, y), Direction.RIGHT))
+                energized_numbers.append(self.calculate_energized((self.max_x + 1, y), Direction.LEFT))
+            for x in range(self.max_x + 1):
+                energized_numbers.append(self.calculate_energized((x, -1), Direction.DOWN))
+                energized_numbers.append(self.calculate_energized((x, self.max_y + 1), Direction.UP))
             energized_number = max(energized_numbers)
         print(f'Part {'2' if part_2 else '1'}: {energized_number} - {time.time() - start_time}')
 
