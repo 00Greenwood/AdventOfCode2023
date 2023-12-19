@@ -67,7 +67,7 @@ class Day19:
             return math.prod(valid_parts)
         elif rule == 'R':
             return 0 # All parts in this range are rejected!
-        else :
+        else:
             return self.check_range(part_ranges, self.rules[rule])
 
     def check_range(self, part_ranges: PartRanges, rules: Rules) -> int:
