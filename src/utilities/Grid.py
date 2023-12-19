@@ -5,8 +5,8 @@ class Grid:
             for y, line in enumerate(input.splitlines()):
                 for x, char in enumerate(line):
                     self.grid[f"{x}, {y}"] = char if not as_int else int(char)
-        self.max_x = max(self.keys(), key=lambda x: x[0])[0]
-        self.max_y = max(self.keys(), key=lambda x: x[1])[1]
+            self.max_x = max(self.keys(), key=lambda x: x[0])[0]
+            self.max_y = max(self.keys(), key=lambda x: x[1])[1]
 
     def get(self, x: int, y: int):
         return self.grid.get(f"{x}, {y}")
@@ -19,6 +19,10 @@ class Grid:
 
     def set(self, x: int, y: int, char) -> None:
         self.grid[f"{x}, {y}"] = char
+
+    def update_size(self) -> None:
+        self.max_x = max(self.keys(), key=lambda x: x[0])[0]
+        self.max_y = max(self.keys(), key=lambda x: x[1])[1]
 
     def max(self) -> tuple[int, int]:
         return (self.max_x, self.max_y)
