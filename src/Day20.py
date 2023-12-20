@@ -3,6 +3,7 @@ from utilities.parse import *
 import time
 from enum import Enum
 from queue import SimpleQueue
+import networkx as nx
 
 test_input = """broadcaster -> a
 %a -> inv, con
@@ -131,14 +132,28 @@ class Day20:
                 number_of_low += number_of_pulses[1]
             output = number_of_high * number_of_low
         else:
-            raise Exception("Done by hand!")
+            graph = nx.Graph()
+            for key, value in self.modules.items():
+                if isinstance(value, ButtonModule):
+                    graph.add_node(key, shape='box')
+                elif isinstance(value, BroadcasterModule):
+                    graph.add_node(key, shape='box')
+                elif isinstance(value, FlipFlopModule):
+                    graph.add_node(key, shape='circle')
+                elif isinstance(value, ConjunctionModule):
+                    graph.add_node(key, shape='diamond')
+            for key, value in self.modules.items():
+                for output in value.outputs:
+                    graph.add_edge(key, output)
+            os.makedirs("output", exist_ok=True)
+            nx.nx_pydot.write_dot(graph, "output/Day20.dot")
         print(f'Part {'2' if part_2 else '1'}: {output} - {time.time() - start_time}')
 
 
 def main():
     day = Day20()
     day.solve(False)
-    # day.solve(True)
+    day.solve(True)
 
 
 if __name__ == "__main__":
