@@ -11,6 +11,11 @@ class Grid:
     def get(self, x: int, y: int):
         return self.grid.get(f"{x}, {y}")
 
+    def get_infinite(self, x: int, y: int):
+        x = x % (self.max_x + 1)
+        y = y % (self.max_y + 1)
+        return self.grid.get(f"{x}, {y}")
+
     def get_row(self, y: int) -> list:
         return [self.grid.get(f"{x}, {y}") for x in range(self.size()[0])]
 
