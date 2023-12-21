@@ -1,15 +1,8 @@
 from utilities.get_input import *
 from utilities.parse import *
-import time
+import time, math
 from enum import Enum
 from queue import SimpleQueue
-import networkx as nx
-
-test_input = """broadcaster -> a
-%a -> inv, con
-&inv -> b
-%b -> con
-&con -> output"""
 
 class Pulse(Enum):
     HIGH = 1
@@ -104,13 +97,15 @@ class Day20:
                     modules[output].connect(key)
         return modules
     
-    def push_button(self) -> tuple[int, int]:
+    def push_button(self, high_id: str = None) -> tuple[int, int]:
         number_of_high = 0
         number_of_low = 0
         modules_to_pulse = SimpleQueue()
         modules_to_pulse.put(("start", Pulse.LOW, "button"))
         while not modules_to_pulse.empty():
             previous_id, pulse, id = modules_to_pulse.get()
+            if previous_id == high_id and pulse == Pulse.HIGH:
+                raise Exception("High pulse on high_id")
             if self.modules.get(id) is not None:
                 for next_id, next_pulse in self.modules[id].pulse(previous_id, pulse):
                     if next_pulse == Pulse.HIGH:
@@ -132,21 +127,20 @@ class Day20:
                 number_of_low += number_of_pulses[1]
             output = number_of_high * number_of_low
         else:
-            graph = nx.Graph()
-            for key, value in self.modules.items():
-                if isinstance(value, ButtonModule):
-                    graph.add_node(key, shape='box')
-                elif isinstance(value, BroadcasterModule):
-                    graph.add_node(key, shape='box')
-                elif isinstance(value, FlipFlopModule):
-                    graph.add_node(key, shape='circle')
-                elif isinstance(value, ConjunctionModule):
-                    graph.add_node(key, shape='diamond')
-            for key, value in self.modules.items():
-                for output in value.outputs:
-                    graph.add_edge(key, output)
-            os.makedirs("output", exist_ok=True)
-            nx.nx_pydot.write_dot(graph, "output/Day20.dot")
+            input_high_at = dict()
+            # "nc" is the only input for "rx"
+            for input_id in self.modules["nc"].inputs.keys():
+                count = 0
+                for _, module in self.modules.items():
+                    module.reset()
+                while True:
+                    try:
+                        count += 1
+                        self.push_button(input_id)
+                    except Exception:
+                        input_high_at[input_id] = count
+                        break
+            output = math.lcm(*input_high_at.values())
         print(f'Part {'2' if part_2 else '1'}: {output} - {time.time() - start_time}')
 
 
