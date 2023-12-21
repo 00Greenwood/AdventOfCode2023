@@ -3,19 +3,6 @@ from utilities.parse import *
 import time
 from utilities.Grid import Grid
 from enum import Enum
-from functools import cache
-
-test_input = """...........
-.....###.#.
-.###.##..#.
-..#.#...#..
-....#.#....
-.##..S####.
-.##..#...#.
-.......##..
-.##.#.####.
-.##..##.##.
-..........."""
 
 type Position = tuple[int, int]
 
