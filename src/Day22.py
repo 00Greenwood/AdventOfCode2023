@@ -16,14 +16,17 @@ class Day22:
         self.input = get_input(2023, 22)
         self.parsed_input = parse_lines(self.input)
         self.cubes = self.parse_cubes()
+        self.sort_cubes()
+        for cube in self.cubes:
+            self.move_cube_downwards(cube)
         return
     
     def parse_cubes(self) -> list[Cube]:
         cubes = []
         matcher = re.compile(r'\d+')
-        for line in self.parsed_input:
+        for i, line in enumerate(self.parsed_input):
             bottom_left_x, bottom_left_y, bottom_left_z, top_right_x, top_right_y, top_right_z =  matcher.findall(line)
-            cubes.append(Cube(bottom_left_x, bottom_left_y, bottom_left_z, top_right_x, top_right_y, top_right_z))
+            cubes.append(Cube(bottom_left_x, bottom_left_y, bottom_left_z, top_right_x, top_right_y, top_right_z, i))
         return cubes
     
     def sort_cubes(self) -> None:
@@ -85,25 +88,48 @@ class Day22:
                 supported_by.append(other_cube)
         return supported_by
 
+    def total_supported(self, total_supported: dict[Cube, set], supports: dict[Cube, set], supported_by: dict[Cube, set], cube: Cube):
+        if cube in total_supported:
+            return; # Already calculated
+        total_supported[cube] = set()
+        for support in supports.get(cube):
+            total_supported[cube].add(support)
+            self.total_supported(total_supported, supports, supported_by, support)
+            for total_supported_by_support in total_supported.get(support):
+                total_supported[cube].add(total_supported_by_support)
+
     def solve(self, part_2: bool) -> None:
         start_time = time.time()
-        self.sort_cubes()
-        for cube in self.cubes:
-            self.move_cube_downwards(cube)
         supports = dict()
         supported_by = dict()
         can_disintegrate = set()
         for cube in self.cubes:
             supports[cube] = self.supports(cube)
-            supported_by[cube] = self.supported_by(support)
+            supported_by[cube] = self.supported_by(cube)
+        output = 0
         for cube in self.cubes:
             if len(supports.get(cube)) == 0:
                 can_disintegrate.add(cube)
             else:
+                can_remove = True
                 for support in supports.get(cube):
-                    if len(supported_by.get(support)) > 1:
-                        can_disintegrate.add(cube)
-        print(f'Part {'2' if part_2 else '1'}: {len(can_disintegrate)} - {time.time() - start_time}')
+                    if len(supported_by.get(support)) < 2:
+                        can_remove &= False 
+                if can_remove:
+                    can_disintegrate.add(cube)
+        if not part_2:
+            output = len(can_disintegrate)
+        else:
+            total_supported = dict()
+            can_not_disintegrate = set()
+            for cube in self.cubes:
+                if cube not in can_disintegrate:
+                    can_not_disintegrate.add(cube)  
+            for cube in can_not_disintegrate:
+                self.total_supported(total_supported, supports, supported_by, cube)
+            for cube in can_not_disintegrate:
+                output += len(total_supported.get(cube))
+        print(f'Part {'2' if part_2 else '1'}: {output} - {time.time() - start_time}')
 
 
 def main() -> None:
