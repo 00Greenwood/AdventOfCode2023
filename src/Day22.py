@@ -72,31 +72,31 @@ class Day22:
             else:
                 break
 
-    def supports(self, cube: Cube) -> list[Cube]:
+    def supports(self, cube: Cube) -> set[Cube]:
         cubes_above = self.cubes_directly_above(cube)
-        supports = []
+        supports = set()
         for other_cube in cubes_above:
             if self.cubes_overlap(cube, other_cube):
-                supports.append(other_cube)
+                supports.add(other_cube)
         return supports
 
-    def supported_by(self, cube: Cube) -> list[Cube]:
+    def supported_by(self, cube: Cube) -> set[Cube]:
         cubes_below = self.cubes_directly_below(cube)
-        supported_by = []
+        supported_by = set()
         for other_cube in cubes_below:
             if self.cubes_overlap(cube, other_cube):
-                supported_by.append(other_cube)
+                supported_by.add(other_cube)
         return supported_by
 
-    def total_supported(self, total_supported: dict[Cube, set], supports: dict[Cube, set], supported_by: dict[Cube, set], cube: Cube):
-        if cube in total_supported:
-            return; # Already calculated
-        total_supported[cube] = set()
+    def directly_supported(self, directly_supported: set[Cube], supports: dict[Cube, set], supported_by: dict[Cube, set], cube: Cube):
         for support in supports.get(cube):
-            total_supported[cube].add(support)
-            self.total_supported(total_supported, supports, supported_by, support)
-            for total_supported_by_support in total_supported.get(support):
-                total_supported[cube].add(total_supported_by_support)
+            number_of_supports = 0
+            for cube_supported_by in supported_by.get(support):
+                if cube_supported_by not in directly_supported:
+                    number_of_supports += 1
+            if number_of_supports < 2:
+                directly_supported.add(support)
+                self.directly_supported(directly_supported, supports, supported_by, support)
 
     def solve(self, part_2: bool) -> None:
         start_time = time.time()
@@ -107,28 +107,23 @@ class Day22:
             supports[cube] = self.supports(cube)
             supported_by[cube] = self.supported_by(cube)
         output = 0
-        for cube in self.cubes:
-            if len(supports.get(cube)) == 0:
-                can_disintegrate.add(cube)
-            else:
-                can_remove = True
-                for support in supports.get(cube):
-                    if len(supported_by.get(support)) < 2:
-                        can_remove &= False 
-                if can_remove:
-                    can_disintegrate.add(cube)
         if not part_2:
-            output = len(can_disintegrate)
-        else:
-            total_supported = dict()
-            can_not_disintegrate = set()
             for cube in self.cubes:
-                if cube not in can_disintegrate:
-                    can_not_disintegrate.add(cube)  
-            for cube in can_not_disintegrate:
-                self.total_supported(total_supported, supports, supported_by, cube)
-            for cube in can_not_disintegrate:
-                output += len(total_supported.get(cube))
+                if len(supports.get(cube)) == 0:
+                    can_disintegrate.add(cube)
+                else:
+                    can_remove = True
+                    for support in supports.get(cube):
+                        if len(supported_by.get(support)) < 2:
+                            can_remove &= False 
+                    if can_remove:
+                        can_disintegrate.add(cube)
+                output = len(can_disintegrate)
+        else:
+            for cube in self.cubes:
+                directly_supported = set()
+                self.directly_supported(directly_supported, supports, supported_by, cube)
+                output += len(directly_supported)
         print(f'Part {'2' if part_2 else '1'}: {output} - {time.time() - start_time}')
 
 
